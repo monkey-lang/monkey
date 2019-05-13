@@ -6,10 +6,28 @@ import (
 
 const (
 	EOF TokenType = iota
+	ILLEGAL
+	ASSIGN
+	ADD
+	RPAREN
+	LPAREN
+	RBRACE
+	LBRACE
+	COMMA
+	SEMICOLON
 )
 
 var stringTypes = [...]string{
-	EOF: "EOF",
+	EOF:       "EOF",
+	ILLEGAL:   "ILLEGAL",
+	ASSIGN:    "ASSIGN",
+	ADD:       "ADD",
+	RPAREN:    "RPAREN",
+	LPAREN:    "LPAREN",
+	RBRACE:    "RBRACE",
+	LBRACE:    "LBRACE",
+	COMMA:     "COMMA",
+	SEMICOLON: "SEMICOLON",
 }
 
 /* Token Types */

@@ -2,6 +2,7 @@ package scanner
 
 import (
 	"github.com/monkey-lang/monkey/token"
+	"strings"
 	"unicode/utf8"
 )
 
@@ -14,14 +15,14 @@ func New(input string) *scanner {
 		input:  input,
 		tokens: make(chan token.Token),
 	}
-	s.run()
+	go s.run()
 	return s
 }
 
 type scanner struct {
 	input  string           // the "source code"
-	start  int              // start position of this item
-	pos    int              // current position of this item
+	begin  int              // start endition of this item
+	end    int              // current position of this item
 	width  int              // width of last rune read from input.
 	tokens chan token.Token // channel of scanned tokens
 }
@@ -39,18 +40,18 @@ func (s *scanner) run() {
 // next returns the next rune in the string
 func (s *scanner) next() rune {
 	var r rune
-	if s.pos > len(s.input) {
+	if s.end >= len(s.input) {
 		s.width = 0
 		return EOF
 	}
-	r, s.width = utf8.DecodeRuneInString(s.input[s.pos:])
-	s.pos += s.width
+	r, s.width = utf8.DecodeRuneInString(s.input[s.end:])
+	s.end += s.width
 	return r
 }
 
 // prev steps back one rune (it undoes what next did). It should only be called once after next
 func (s *scanner) prev() {
-	s.pos -= s.width
+	s.end -= s.width
 }
 
 // peek returns the next rune but does not consume
@@ -61,11 +62,11 @@ func (s *scanner) peek() rune {
 }
 
 func (s *scanner) confirm() {
-	s.start = s.pos
+	s.begin = s.end
 }
 
 func (s *scanner) emit(typ token.TokenType) {
-	s.tokens <- token.New(typ, s.input[s.start:s.pos])
+	s.tokens <- token.New(typ, s.input[s.begin:s.end])
 	s.confirm()
 }
 
@@ -77,8 +78,12 @@ func scan(s *scanner) stateFn {
 	switch {
 	case r == EOF:
 		return scanEOF
+	case isSpace(r):
+		return scanSpace
+	case isSymbol(r):
+		return scanSymbol
 	default:
-		return nil
+		return scanIllegal
 	}
 }
 
@@ -87,7 +92,51 @@ func scanEOF(s *scanner) stateFn {
 	return nil
 }
 
+func scanSpace(s *scanner) stateFn {
+	for r := s.peek(); isSpace(r); r = s.peek() {
+		s.next()
+	}
+	s.confirm()
+	return scan
+}
+
+func scanSymbol(s *scanner) stateFn {
+	var typ token.TokenType
+	switch s.next() {
+	case '=':
+		typ = token.ASSIGN
+	case '+':
+		typ = token.ADD
+	case '(':
+		typ = token.LPAREN
+	case ')':
+		typ = token.RPAREN
+	case '{':
+		typ = token.LBRACE
+	case '}':
+		typ = token.RBRACE
+	case ',':
+		typ = token.COMMA
+	case ';':
+		typ = token.SEMICOLON
+	default:
+		return scanIllegal
+	}
+	s.emit(typ)
+	return scan
+}
+
+func scanIllegal(s *scanner) stateFn {
+	s.next()
+	s.emit(token.ILLEGAL)
+	return nil
+}
+
 /* helpers */
 func isSpace(r rune) bool {
 	return r == ' ' || r == '\t'
+}
+
+func isSymbol(r rune) bool {
+	return strings.ContainsRune("=+(){},;`", r)
 }

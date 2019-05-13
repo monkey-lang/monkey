@@ -6,8 +6,16 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	src := ""
+	src := `=+(){},;`
 	tests := []token.Token{
+		{token.ASSIGN, "="},
+		{token.ADD, "+"},
+		{token.LPAREN, "("},
+		{token.RPAREN, ")"},
+		{token.LBRACE, "{"},
+		{token.RBRACE, "}"},
+		{token.COMMA, ","},
+		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
 
