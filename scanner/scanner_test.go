@@ -6,18 +6,11 @@ import (
 )
 
 func TestNextToken(t *testing.T) {
-	src := `=+(){},;`
+	src := ""
 	tests := []token.Token{
-		{token.ASSIGN, "="},
-		{token.ADD, "+"},
-		{token.LPAREN, "("},
-		{token.LBRACE, "{"},
-		{token.RPAREN, ")"},
-		{token.RBRACE, "}"},
-		{token.COMMA, ","},
-		{token.SEMICOLON, ";"},
 		{token.EOF, ""},
 	}
+
 	s := New(src)
 	for i, ti := range tests {
 		tok := s.NextToken()

@@ -4,47 +4,31 @@ import (
 	"fmt"
 )
 
+const (
+	EOF TokenType = iota
+)
+
+var stringTypes = [...]string{
+	EOF: "EOF",
+}
+
+/* Token Types */
 type TokenType int
 
 func (typ TokenType) String() string {
-	return tokens[typ]
+	return stringTypes[typ]
 }
 
-type TokenLiteral string
+/* Token */
+func New(typ TokenType, lit string) Token {
+	return Token{typ, lit}
+}
 
 type Token struct {
 	Type    TokenType
-	Literal TokenLiteral
+	Literal string
 }
 
 func (tok Token) String() string {
-	return fmt.Sprintf("(%s, %s)", tokens[tok.Type], tok.Literal)
-}
-
-const (
-	EOF TokenType = iota
-	ASSIGN
-	ADD
-	LPAREN
-	LBRACE
-	RPAREN
-	RBRACE
-	COMMA
-	SEMICOLON
-)
-
-var tokens = [...]string{
-	EOF:       "EOF",
-	ASSIGN:    "ASSIGN",
-	ADD:       "ADD",
-	LPAREN:    "LPAREN",
-	LBRACE:    "LBRACE",
-	RPAREN:    "RPAREN",
-	RBRACE:    "RBRACE",
-	COMMA:     "COMMA",
-	SEMICOLON: "SEMICOLON",
-}
-
-func New(typ TokenType, lit TokenLiteral) Token {
-	return Token{typ, lit}
+	return fmt.Sprintf("(%s, %s)", stringTypes[tok.Type], tok.Literal)
 }
