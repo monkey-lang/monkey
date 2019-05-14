@@ -65,8 +65,12 @@ func (s *scanner) confirm() {
 	s.begin = s.end
 }
 
+func (s *scanner) word() string {
+	return s.input[s.begin:s.end]
+}
+
 func (s *scanner) emit(typ token.TokenType) {
-	s.tokens <- token.New(typ, s.input[s.begin:s.end])
+	s.tokens <- token.New(typ, s.word())
 	s.confirm()
 }
 
@@ -107,13 +111,6 @@ func scanSpace(s *scanner) stateFn {
 func scanSymbol(s *scanner) stateFn {
 	var typ token.TokenType
 	switch s.next() {
-	case '=':
-		if s.peek() == '=' {
-			s.next()
-			typ = token.EQ
-		} else {
-			typ = token.ASSIGN
-		}
 	case '+':
 		typ = token.ADD
 	case '(':
@@ -128,13 +125,6 @@ func scanSymbol(s *scanner) stateFn {
 		typ = token.COMMA
 	case ';':
 		typ = token.SEMICOLON
-	case '!':
-		if s.peek() == '=' {
-			s.next()
-			typ = token.NOT_EQ
-		} else {
-			typ = token.BANG
-		}
 	case '-':
 		typ = token.MINUS
 	case '/':
@@ -145,6 +135,21 @@ func scanSymbol(s *scanner) stateFn {
 		typ = token.LT
 	case '>':
 		typ = token.GT
+	case '!':
+		if s.peek() == '=' {
+			s.next()
+			typ = token.NOT_EQ
+		} else {
+			typ = token.BANG
+		}
+	case '=':
+		if s.peek() == '=' {
+			s.next()
+			typ = token.EQ
+		} else {
+			typ = token.ASSIGN
+		}
+
 	default:
 		return scanIllegal
 	}
@@ -153,10 +158,12 @@ func scanSymbol(s *scanner) stateFn {
 }
 
 func scanIdent(s *scanner) stateFn {
+	var typ token.TokenType
 	for r := s.peek(); isLetter(r); r = s.peek() {
 		s.next()
 	}
-	s.emit(token.IDENT)
+	typ = token.IdentLookup(s.word())
+	s.emit(typ)
 	return scan
 }
 

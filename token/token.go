@@ -23,13 +23,22 @@ const (
 	SLASH
 	COMMA
 	SEMICOLON
-	IDENT
 	INT
+	// Identifiers
+	IDENT
+	LET
+	FUNCTION
+	RETURN
+	IF
+	ELSE
+	TRUE
+	FALSE
 )
 
 var stringTypes = [...]string{
-	EOF:       "EOF",
-	ILLEGAL:   "ILLEGAL",
+	EOF:     "EOF",
+	ILLEGAL: "ILLEGAL",
+	// Symbols
 	ASSIGN:    "ASSIGN",
 	ADD:       "ADD",
 	MINUS:     "MINUS",
@@ -46,8 +55,27 @@ var stringTypes = [...]string{
 	SLASH:     "SLASH",
 	COMMA:     "COMMA",
 	SEMICOLON: "SEMICOLON",
-	IDENT:     "IDENT",
-	INT:       "INT",
+	// Numbers
+	INT: "INT",
+	// Identifiers
+	IDENT:    "IDENT",
+	LET:      "LET",
+	FUNCTION: "FUNCTION",
+	RETURN:   "RETURN",
+	IF:       "IF",
+	ELSE:     "ELSE",
+	TRUE:     "TRUE",
+	FALSE:    "FALSE",
+}
+
+var identTypes = map[string]TokenType{
+	"let":    LET,
+	"fn":     FUNCTION,
+	"return": RETURN,
+	"if":     IF,
+	"else":   ELSE,
+	"true":   TRUE,
+	"false":  FALSE,
 }
 
 /* Token Types */
@@ -69,4 +97,13 @@ type Token struct {
 
 func (tok Token) String() string {
 	return fmt.Sprintf("(%s, %s)", stringTypes[tok.Type], tok.Literal)
+}
+
+/* utils */
+func IdentLookup(ident string) TokenType {
+	typ, found := identTypes[ident]
+	if !found {
+		return IDENT
+	}
+	return typ
 }
