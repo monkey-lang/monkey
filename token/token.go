@@ -9,12 +9,22 @@ const (
 	ILLEGAL
 	ASSIGN
 	ADD
+	MINUS
+	ASTERISK
+	BANG
 	RPAREN
 	LPAREN
 	RBRACE
 	LBRACE
+	LT
+	GT
+	EQ
+	NOT_EQ
+	SLASH
 	COMMA
 	SEMICOLON
+	IDENT
+	INT
 )
 
 var stringTypes = [...]string{
@@ -22,12 +32,22 @@ var stringTypes = [...]string{
 	ILLEGAL:   "ILLEGAL",
 	ASSIGN:    "ASSIGN",
 	ADD:       "ADD",
+	MINUS:     "MINUS",
+	ASTERISK:  "ASTERISK",
+	BANG:      "BANG",
 	RPAREN:    "RPAREN",
 	LPAREN:    "LPAREN",
 	RBRACE:    "RBRACE",
 	LBRACE:    "LBRACE",
+	LT:        "LT",
+	GT:        "GT",
+	EQ:        "EQ",
+	NOT_EQ:    "NOT_EQ",
+	SLASH:     "SLASH",
 	COMMA:     "COMMA",
 	SEMICOLON: "SEMICOLON",
+	IDENT:     "IDENT",
+	INT:       "INT",
 }
 
 /* Token Types */

@@ -76,12 +76,16 @@ type stateFn func(s *scanner) stateFn
 func scan(s *scanner) stateFn {
 	r := s.peek()
 	switch {
-	case r == EOF:
+	case isEOF(r):
 		return scanEOF
 	case isSpace(r):
 		return scanSpace
 	case isSymbol(r):
 		return scanSymbol
+	case isLetter(r):
+		return scanIdent
+	case isNumber(r):
+		return scanInt
 	default:
 		return scanIllegal
 	}
@@ -104,7 +108,12 @@ func scanSymbol(s *scanner) stateFn {
 	var typ token.TokenType
 	switch s.next() {
 	case '=':
-		typ = token.ASSIGN
+		if s.peek() == '=' {
+			s.next()
+			typ = token.EQ
+		} else {
+			typ = token.ASSIGN
+		}
 	case '+':
 		typ = token.ADD
 	case '(':
@@ -119,10 +128,43 @@ func scanSymbol(s *scanner) stateFn {
 		typ = token.COMMA
 	case ';':
 		typ = token.SEMICOLON
+	case '!':
+		if s.peek() == '=' {
+			s.next()
+			typ = token.NOT_EQ
+		} else {
+			typ = token.BANG
+		}
+	case '-':
+		typ = token.MINUS
+	case '/':
+		typ = token.SLASH
+	case '*':
+		typ = token.ASTERISK
+	case '<':
+		typ = token.LT
+	case '>':
+		typ = token.GT
 	default:
 		return scanIllegal
 	}
 	s.emit(typ)
+	return scan
+}
+
+func scanIdent(s *scanner) stateFn {
+	for r := s.peek(); isLetter(r); r = s.peek() {
+		s.next()
+	}
+	s.emit(token.IDENT)
+	return scan
+}
+
+func scanInt(s *scanner) stateFn {
+	for r := s.peek(); isNumber(r); r = s.peek() {
+		s.next()
+	}
+	s.emit(token.INT)
 	return scan
 }
 
@@ -133,10 +175,22 @@ func scanIllegal(s *scanner) stateFn {
 }
 
 /* helpers */
+func isEOF(r rune) bool {
+	return r == EOF
+}
+
 func isSpace(r rune) bool {
-	return r == ' ' || r == '\t'
+	return r == ' ' || r == '\t' || r == '\n' || r == '\r'
 }
 
 func isSymbol(r rune) bool {
-	return strings.ContainsRune("=+(){},;`", r)
+	return strings.ContainsRune("=+(){},;!-/*<>", r)
+}
+
+func isLetter(r rune) bool {
+	return 'a' <= r && r <= 'z' || 'A' <= r && r <= 'Z' || r == '_'
+}
+
+func isNumber(r rune) bool {
+	return '0' <= r && r <= '9'
 }
