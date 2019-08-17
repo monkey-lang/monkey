@@ -10,8 +10,8 @@ const (
 	EOF rune = 0
 )
 
-func New(input string) *scanner {
-	s := &scanner{
+func New(input string) *Scanner {
+	s := &Scanner{
 		input:  input,
 		tokens: make(chan token.Token),
 	}
@@ -19,7 +19,7 @@ func New(input string) *scanner {
 	return s
 }
 
-type scanner struct {
+type Scanner struct {
 	input  string           // the "source code"
 	begin  int              // start endition of this item
 	end    int              // current position of this item
@@ -27,18 +27,18 @@ type scanner struct {
 	tokens chan token.Token // channel of scanned tokens
 }
 
-func (s *scanner) NextToken() token.Token {
+func (s *Scanner) NextToken() token.Token {
 	return <-s.tokens
 }
 
-func (s *scanner) run() {
+func (s *Scanner) run() {
 	for state := scan(s); state != nil; state = state(s) {
 	}
 	close(s.tokens)
 }
 
 // next returns the next rune in the string
-func (s *scanner) next() rune {
+func (s *Scanner) next() rune {
 	var r rune
 	if s.end >= len(s.input) {
 		s.width = 0
@@ -50,34 +50,34 @@ func (s *scanner) next() rune {
 }
 
 // prev steps back one rune (it undoes what next did). It should only be called once after next
-func (s *scanner) prev() {
+func (s *Scanner) prev() {
 	s.end -= s.width
 }
 
 // peek returns the next rune but does not consume
-func (s *scanner) peek() rune {
+func (s *Scanner) peek() rune {
 	r := s.next()
 	s.prev()
 	return r
 }
 
-func (s *scanner) confirm() {
+func (s *Scanner) confirm() {
 	s.begin = s.end
 }
 
-func (s *scanner) word() string {
+func (s *Scanner) word() string {
 	return s.input[s.begin:s.end]
 }
 
-func (s *scanner) emit(typ token.TokenType) {
+func (s *Scanner) emit(typ token.TokenType) {
 	s.tokens <- token.New(typ, s.word())
 	s.confirm()
 }
 
-/* scanners */
-type stateFn func(s *scanner) stateFn
+/* Scanners */
+type stateFn func(s *Scanner) stateFn
 
-func scan(s *scanner) stateFn {
+func scan(s *Scanner) stateFn {
 	r := s.peek()
 	switch {
 	case isEOF(r):
@@ -95,12 +95,12 @@ func scan(s *scanner) stateFn {
 	}
 }
 
-func scanEOF(s *scanner) stateFn {
+func scanEOF(s *Scanner) stateFn {
 	s.emit(token.EOF)
 	return nil
 }
 
-func scanSpace(s *scanner) stateFn {
+func scanSpace(s *Scanner) stateFn {
 	for r := s.peek(); isSpace(r); r = s.peek() {
 		s.next()
 	}
@@ -108,7 +108,7 @@ func scanSpace(s *scanner) stateFn {
 	return scan
 }
 
-func scanSymbol(s *scanner) stateFn {
+func scanSymbol(s *Scanner) stateFn {
 	var typ token.TokenType
 	switch s.next() {
 	case '+':
@@ -157,7 +157,7 @@ func scanSymbol(s *scanner) stateFn {
 	return scan
 }
 
-func scanIdent(s *scanner) stateFn {
+func scanIdent(s *Scanner) stateFn {
 	var typ token.TokenType
 	for r := s.peek(); isLetter(r); r = s.peek() {
 		s.next()
@@ -167,7 +167,7 @@ func scanIdent(s *scanner) stateFn {
 	return scan
 }
 
-func scanInt(s *scanner) stateFn {
+func scanInt(s *Scanner) stateFn {
 	for r := s.peek(); isNumber(r); r = s.peek() {
 		s.next()
 	}
@@ -175,7 +175,7 @@ func scanInt(s *scanner) stateFn {
 	return scan
 }
 
-func scanIllegal(s *scanner) stateFn {
+func scanIllegal(s *Scanner) stateFn {
 	s.next()
 	s.emit(token.ILLEGAL)
 	return nil
