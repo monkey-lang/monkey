@@ -48,16 +48,20 @@ func (p *Parser) next() {
 }
 
 /* Parsers */
+// TODO: assertions with nil are failing, it might should be *ast.Statement
 func (p *Parser) parseStatement() ast.Statement {
 	switch p.curToken.Type {
 	case token.LET:
 		return p.parseLetStatement()
+	case token.RETURN:
+		return p.parseReturnStatement()
 	default:
 		return nil
 	}
 }
 
 func (p *Parser) parseLetStatement() *ast.LetStatement {
+	// [let] x = 10;
 	stmt := &ast.LetStatement{Token: p.curToken}
 	p.next()
 
@@ -77,6 +81,20 @@ func (p *Parser) parseLetStatement() *ast.LetStatement {
 	p.next()
 
 	// let x = [10];
+	// TODO: replace this
+	for p.curToken.Type != token.SEMICOLON {
+		p.next()
+	}
+
+	return stmt
+}
+
+func (p *Parser) parseReturnStatement() *ast.ReturnStatement {
+	// [return] 10;
+	stmt := &ast.ReturnStatement{Token: p.curToken}
+	p.next()
+
+	// return [10];
 	// TODO: replace this
 	for p.curToken.Type != token.SEMICOLON {
 		p.next()

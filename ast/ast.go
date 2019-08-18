@@ -44,6 +44,19 @@ func (ls *LetStatement) TokenLiteral() string {
 	return ls.Token.Literal
 }
 
+// Return
+type ReturnStatement struct {
+	Token token.Token
+	Value Expression
+}
+
+func (rs *ReturnStatement) statementNode() {
+}
+
+func (rs *ReturnStatement) TokenLiteral() string {
+	return rs.Token.Literal
+}
+
 /* Expressions */
 // Identifier
 // TODO: why an identifier in an assignment should be an expression?

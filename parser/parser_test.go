@@ -42,10 +42,45 @@ func TestLetStatement(t *testing.T) {
 		}
 		letStatement, ok := stmt.(*ast.LetStatement)
 		if !ok {
-			t.Errorf("Expected *ast.LetStatement got=%T", stmt)
+			t.Errorf("Expected *ast.LetStatement got %T", stmt)
 		}
-		if letStatement.Name.Value != ti.expectedIdentifier {
-			t.Errorf("Expected identifier to be '%s' got '%s'", ti.expectedIdentifier, letStatement.Name.Value)
+		if letStatement.Name.TokenLiteral() != ti.expectedIdentifier {
+			t.Errorf("Expected identifier to be '%s' got '%s'", ti.expectedIdentifier, letStatement.TokenLiteral())
+		}
+	}
+}
+
+func TestReturnStatement(t *testing.T) {
+	input := `
+		return 5;
+		return 10;
+		return add(15);
+	`
+	l := scanner.New(input)
+	p := New(l)
+	program := p.Parse()
+	errors := p.Errors()
+	if len(errors) > 0 {
+		t.Errorf("Parser has %d errors", len(errors))
+		for _, err := range errors {
+			t.Errorf("Parser error: %q", err)
+		}
+		t.FailNow()
+	}
+	if program == nil {
+		t.Fatalf("Parse returned nil")
+	}
+	if len(program.Statements) != 3 {
+		t.Fatalf("Expected 3 statements, got %d", len(program.Statements))
+	}
+
+	for _, stmt := range program.Statements {
+		returnStmt, ok := stmt.(*ast.ReturnStatement)
+		if !ok {
+			t.Errorf("Expected *ast.ReturnStatement got %T", stmt)
+		}
+		if returnStmt.TokenLiteral() != "return" {
+			t.Errorf("Expected literal to be 'return' got '%s'", returnStmt.TokenLiteral())
 		}
 	}
 }
