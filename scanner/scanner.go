@@ -20,11 +20,13 @@ func New(input string) *Scanner {
 }
 
 type Scanner struct {
-	input  string           // the "source code"
-	begin  int              // start endition of this item
-	end    int              // current position of this item
-	width  int              // width of last rune read from input.
 	tokens chan token.Token // channel of scanned tokens
+
+	// TODO: input, begin, end and width can be refactored in its own module
+	input string // the "source code"
+	begin int    // start endition of this item
+	end   int    // current position of this item
+	width int    // width of last rune read from input.
 }
 
 func (s *Scanner) NextToken() token.Token {

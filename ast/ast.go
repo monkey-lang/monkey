@@ -10,7 +10,7 @@ type Node interface {
 
 type Statement interface {
 	Node
-	statetementNode()
+	statementNode()
 }
 
 type Expression interface {
