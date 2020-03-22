@@ -6,6 +6,34 @@ import (
 	"testing"
 )
 
+func TestIdentifierExpression(t *testing.T) {
+	input := "foobar;"
+	l := scanner.New(input)
+	p := New(l)
+	checkParseErrors(t, p)
+	program := p.Parse()
+	if len(program.Statements) != 1 {
+		t.Fatalf("Expected 1 statements, got %d", len(program.Statements))
+	}
+	stmt, ok := program.Statements[0].(*ast.ExpressionStatement)
+	if !ok {
+		t.Fatalf("program.Statements[0] is not ast.ExpressionStatement. got=%T",
+			program.Statements[0])
+	}
+
+	ident, ok := stmt.Expression.(*ast.Identifier)
+	if !ok {
+		t.Fatalf("exp not *ast.Identifier. got=%T", stmt.Expression)
+	}
+	if ident.Value != "foobar" {
+		t.Errorf("ident.Value not %s. got=%s", "foobar", ident.Value)
+	}
+	if ident.TokenLiteral() != "foobar" {
+		t.Errorf("ident.TokenLiteral not %s. got=%s", "foobar",
+			ident.TokenLiteral())
+	}
+}
+
 func TestLetStatement(t *testing.T) {
 	input := `
 		let x = 5;
@@ -14,15 +42,8 @@ func TestLetStatement(t *testing.T) {
 	`
 	l := scanner.New(input)
 	p := New(l)
+	checkParseErrors(t, p)
 	program := p.Parse()
-	errors := p.Errors()
-	if len(errors) > 0 {
-		t.Errorf("Parser has %d errors", len(errors))
-		for _, err := range errors {
-			t.Errorf("Parser error: %q", err)
-		}
-		t.FailNow()
-	}
 	if program == nil {
 		t.Fatalf("Parse returned nil")
 	}
@@ -58,22 +79,14 @@ func TestReturnStatement(t *testing.T) {
 	`
 	l := scanner.New(input)
 	p := New(l)
+	checkParseErrors(t, p)
 	program := p.Parse()
-	errors := p.Errors()
-	if len(errors) > 0 {
-		t.Errorf("Parser has %d errors", len(errors))
-		for _, err := range errors {
-			t.Errorf("Parser error: %q", err)
-		}
-		t.FailNow()
-	}
 	if program == nil {
 		t.Fatalf("Parse returned nil")
 	}
 	if len(program.Statements) != 3 {
 		t.Fatalf("Expected 3 statements, got %d", len(program.Statements))
 	}
-
 	for _, stmt := range program.Statements {
 		returnStmt, ok := stmt.(*ast.ReturnStatement)
 		if !ok {
@@ -82,5 +95,16 @@ func TestReturnStatement(t *testing.T) {
 		if returnStmt.TokenLiteral() != "return" {
 			t.Errorf("Expected literal to be 'return' got '%s'", returnStmt.TokenLiteral())
 		}
+	}
+}
+
+func checkParseErrors(t *testing.T, p *Parser) {
+	errors := p.Errors()
+	if len(errors) > 0 {
+		t.Errorf("Parser has %d errors", len(errors))
+		for _, err := range errors {
+			t.Errorf("Parser error: %q", err)
+		}
+		t.FailNow()
 	}
 }
