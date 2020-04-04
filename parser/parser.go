@@ -40,6 +40,8 @@ func New(input *scanner.Scanner) *Parser {
 	p.prefixParseFns = make(map[token.TokenType]prefixParseFn)
 	p.registerPrefix(token.IDENT, p.parseIdentifier)
 	p.registerPrefix(token.INT, p.parseIntegerLiteral)
+	p.registerPrefix(token.TRUE, p.parseBoolean)
+	p.registerPrefix(token.FALSE, p.parseBoolean)
 	p.registerPrefix(token.BANG, p.parsePrefixExpression)
 	p.registerPrefix(token.MINUS, p.parsePrefixExpression)
 
@@ -98,6 +100,10 @@ func (p *Parser) registerInfix(tokenType token.TokenType, fn infixParseFn) {
 func (p *Parser) next() {
 	p.curToken = p.peekToken
 	p.peekToken = p.input.NextToken()
+}
+
+func (p *Parser) curTokenIs(tokenType token.TokenType) bool {
+	return p.curToken.Type == tokenType
 }
 
 func (p *Parser) peekTokenIs(tokenType token.TokenType) bool {
@@ -212,6 +218,10 @@ func (p *Parser) parseIntegerLiteral() ast.Expression {
 		p.errors = append(p.errors, msg)
 	}
 	return &ast.IntegerLiteral{Token: p.curToken, Value: value}
+}
+
+func (p *Parser) parseBoolean() ast.Expression {
+	return &ast.Boolean{Token: p.curToken, Value: p.curTokenIs(token.TRUE)}
 }
 
 func (p *Parser) parsePrefixExpression() ast.Expression {
